@@ -1,0 +1,64 @@
+unit XMLURLClientDataSet;
+
+interface
+
+uses Classes, XMLClientDataSet, IdHTTP;
+
+  type
+    TXMLURLClientDataSet = class(TXMLClientDataSet)
+  public
+    { Public declarations }
+    Constructor Create(AOwner: TComponent); Override;
+  private
+    { Private declarations }
+    FHttp: TIdHttp;
+    FURL: String;
+    FActive: Boolean;
+    Function GetURL: String;
+    Procedure SetURL(URL: String);
+    Procedure SetActive(Value: Boolean); Reintroduce;
+  protected
+    { Protected declarations }
+  published
+    { Published declarations }
+    Property URL: String Read GetURL Write SetURL;
+    Property Active: Boolean Read FActive Write SetActive;
+  end;
+
+procedure Register;
+
+implementation
+
+procedure Register;
+begin
+  RegisterComponents('RSI', [TXMLURLClientDataSet]);
+end;
+
+{ TWSDLClientDataSet }
+
+Constructor TXMLURLClientDataSet.Create(AOwner: TComponent);
+begin
+  inherited;
+  FHttp := TIdHttp.Create(Self);
+  FActive := False;
+end;
+
+function TXMLURLClientDataSet.GetURL: String;
+begin
+  Result := FURL;
+end;
+
+procedure TXMLURLClientDataSet.SetActive(Value: Boolean);
+begin
+  If Value Then
+    SetXML(FHttp.get(URL));
+  inherited;
+  FActive := Value;
+end;
+
+procedure TXMLURLClientDataSet.SetURL(URL: String);
+begin
+  FURL := URL;
+end;
+
+end.

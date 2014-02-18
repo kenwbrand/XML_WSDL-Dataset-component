@@ -1,0 +1,204 @@
+unit XMLClientDataSet;
+
+interface
+
+uses
+  SysUtils, Classes, DB, DBClient, AutoTransform, XMLUtil, XMLDoc, XMLDom, XMLXform;
+
+type
+  TXMLBaseClientDataSet = class(TCustomClientDataSet)
+  private
+    { Private declarations }
+    FActivate: Boolean;
+    FTransformStr: String;
+    FTransformDom: IDOMDocument;
+    FTransformer: TXMLAutoTransform;
+    FXMLDoc: TXMLDocument;
+    FXMLTransform: TXMLTransform;
+    FActive: Boolean;
+    FXML: String;
+  public
+    { Public declarations }
+    Constructor Create(AOwner: TComponent); Override;
+    Destructor Destroy; Override;
+  protected
+    { Protected declarations }
+    Procedure SetActive(Value: Boolean); Override;
+    Procedure SetXML(XML: String);
+    Function GetXML: String;
+    Function GetTransform: String;
+    Function GetTransformDom: IDomDocument;
+    Property XML: String Read GetXML Write SetXML;
+    Property Transform: String Read GetTransform;
+    Property Active: Boolean Read FActive Write SetActive;
+  published
+    { Published declarations }
+  end;
+
+Type
+  TXMLFileClientDataSet = class(TXMLBaseClientDataSet)
+  Private
+    FFileName: String;
+    Function GetFileName: String;
+    Procedure SetFileName(FileName: String);
+  public
+    { Public declarations }
+    Constructor Create(AOwner: TComponent); Override;
+    Destructor Destroy; Override;
+  Protected
+    Property FileName: String Read GetFileName Write SetFileName ;
+  end;
+
+type
+  TXMLClientDataSet = class(TXMLBaseClientDataSet)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    Constructor Create(AOwner: TComponent); Override;
+    Destructor Destroy; Override;
+  protected
+    { Protected declarations }
+    Procedure SetActive(Value: Boolean); Override;
+  published
+    { Published declarations }
+    property DataSetField;
+    Property XML;
+    Property Transform;
+    Property Active;
+  end;
+
+procedure Register;
+
+implementation
+
+ {$R XMLClientDataSet.RES}
+procedure Register;
+begin
+  RegisterComponents('RSI', [TXMLClientDataSet]);
+end;
+
+{ TXMLBaseClientDataSet }
+
+Constructor TXMLBaseClientDataSet.Create(AOwner: TComponent);
+begin
+  Inherited Create(AOwner) ;
+  FActivate := True;
+  FXML := '';
+  FXMLDoc := TXMLDocument.Create(Self);
+  FTransformer := TXMLAutoTransform.Create(Self);
+  FXMLTransform := TXMLTransform.Create(Self);
+end;
+
+procedure TXMLBaseClientDataSet.SetActive(Value: Boolean);
+begin
+  // Setting the XMLData internally sets the active property to true
+  // This behavior is not desired and causes setactive to be called recursivly
+  // FActivate filters out this behavior by not allowing a recursivly called setActive
+  // to do any work
+  IF FActivate Then
+  Begin
+    FActive := Value;
+    Try
+      If (XML <> '') And Value Then
+      Begin
+        FActivate := False;
+        FXMLDoc.LoadFromXML(XML);
+        FXMLTransform.SourceXml := XML;
+        FXMLTransform.TransformationDocument := GetTransformDom;
+        XMLData := FXMLTransform.Data;
+        Inherited;
+        FActivate := True;
+      End
+      Else
+        Inherited;
+    Except
+      FActive := False;
+      Raise;
+    End;
+  End;
+end;
+
+Function TXMLBaseClientDataSet.GetXML: String;
+Begin
+  Result := FXML;
+End;
+
+destructor TXMLBaseClientDataSet.Destroy;
+begin
+  Self.Active := False;
+  FXMLTransform.Free;
+  FTransformer.Free;
+  FXMLDoc.Free;
+  Inherited Destroy;
+end;
+
+function TXMLBaseClientDataSet.GetTransform: String;
+begin
+  If (GetXML <> '') AND Active Then
+  Begin
+    FTransformStr := FTransformer.getTransform(GetXML)
+  End
+  Else
+    FTransformStr := '';
+  Result := FTransformStr;
+end;
+
+function TXMLBaseClientDataSet.GetTransformDom: IDomDocument;
+Var Transform: String;
+begin
+  Transform := GetTransform;
+  FTransformDom := xmlutil.LoadDocFromString(Transform);
+  Result := FTransformDom;
+end;
+
+Procedure TXMLBaseClientDataSet.SetXML(XML: String);
+begin
+  FXML := XML;
+end;
+
+{ TXMLClientDataSet }
+
+constructor TXMLClientDataSet.Create(AOwner: TComponent);
+begin
+  inherited;
+end;
+
+destructor TXMLClientDataSet.Destroy;
+begin
+  inherited;
+end;
+
+procedure TXMLClientDataSet.SetActive(Value: Boolean);
+begin
+  inherited;
+end;
+
+{ TXMLFileClientDataSet }
+
+constructor TXMLFileClientDataSet.Create(AOwner: TComponent);
+begin
+  inherited;
+end;
+
+destructor TXMLFileClientDataSet.Destroy;
+begin
+  inherited;
+end;
+
+function TXMLFileClientDataSet.GetFileName: String;
+begin
+  Result := FFileName;
+end;
+
+procedure TXMLFileClientDataSet.SetFileName(FileName: String);
+begin
+  FFileName := FileName;
+  Try
+    FXMLDoc.LoadFromFile(FileName);
+  Except
+    Raise Exception.Create('Unable to Load XML File');
+  End;
+end;
+
+end.

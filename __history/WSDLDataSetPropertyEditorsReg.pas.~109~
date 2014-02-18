@@ -1,0 +1,230 @@
+unit WSDLDataSetPropertyEditorsReg;
+
+interface
+
+uses Classes, DesignIntf, DesignEditors, XMLClientDataSet, WSDLItems, unit_SoapHelpers;
+
+Type TWSDLMethods = class(TPropertyEditor)
+  Public
+    Function GetAttributes:  TPropertyAttributes; Override;
+    Procedure GetValues(Proc: TGetStrProc); Override;
+    Function AllEqual: boolean; Override;
+    Function GetValue: String; Override;
+    Procedure SetValue (const Value: string); Override;
+end;
+
+Type TWSDLMethodNumber = class(TIntegerProperty)
+  Public
+    Function GetAttributes:  TPropertyAttributes; Override;
+    Procedure GetValues(Proc: TGetStrProc); Override;
+    Function AllEqual: boolean; Override;
+    Function GetValue: String; Override;
+    Procedure SetValue (const Value: string); Override;
+end;
+
+Type TWSDLService = class(TPropertyEditor)
+  Public
+    Function GetAttributes:  TPropertyAttributes; Override;
+    Procedure GetValues(Proc: TGetStrProc); Override;
+    Function AllEqual: boolean; Override;
+    Function GetValue: String; Override;
+    Procedure SetValue (const Value: string); Override;
+end;
+
+Type TWSDLPort = class(TPropertyEditor)
+  Public
+    Function GetAttributes:  TPropertyAttributes; Override;
+    Procedure GetValues(Proc: TGetStrProc); Override;
+    Function AllEqual: boolean; Override;
+    Function GetValue: String; Override;
+    Procedure SetValue (const Value: string); Override;
+end;
+
+procedure Register;
+
+implementation
+
+uses SysUtils, Forms, Dialogs, Controls, WSDLClientDataSet, WSDLIntf;
+
+procedure Register;
+Begin
+  RegisterPropertyEditor(TypeInfo(string),TXMLBaseClientDataSet,'Service',TWSDLService);
+  RegisterPropertyEditor(TypeInfo(string),TXMLBaseClientDataSet,'Port',TWSDLPort);
+  RegisterPropertyEditor(TypeInfo(string),TXMLBaseClientDataSet,'Method',TWSDLMethods);
+  RegisterPropertyEditor(TypeInfo(Integer),TXMLBaseClientDataSet,'MethodNumber',TWSDLMethodNumber);
+End;
+
+{ WSDLService }
+
+function TWSDLService.AllEqual: boolean;
+var
+  FirstVal: string;
+  i: Integer;
+begin
+  FirstVal := GetStrValue;
+  Result := True;
+  i := 1;
+  while Result and (i < PropCount) do
+  begin
+    Result := Result and (GetStrValueAt(i) = FirstVal);
+    Inc(i);
+  end;
+end;
+
+procedure TWSDLService.GetValues(Proc: TGetStrProc);
+Var Services: TStrings;
+    Cnt: Integer;
+begin
+  inherited;
+  Services := TWSDLClientDataSet(GetComponent(0)).SoapHelper.GetServices;
+  For Cnt := 0 to Services.Count -1 Do
+    Proc(Services.Strings[Cnt]);
+end;
+
+function TWSDLService.GetAttributes: TPropertyAttributes;
+begin
+  Result := [paValueList,paSortList];
+end;
+
+function TWSDLService.GetValue: string;
+begin
+  Result := GetStrValue;
+end;
+
+procedure TWSDLService.SetValue(const Value: string);
+begin
+  inherited;
+  SetStrValue(Value);
+end;
+
+{ TWSDLPort }
+
+function TWSDLPort.GetAttributes: TPropertyAttributes;
+begin
+  Result := [paValueList,paSortList];
+end;
+
+function TWSDLPort.AllEqual: boolean;
+var
+  FirstVal: string;
+  i: Integer;
+begin
+  FirstVal := GetStrValue;
+  Result := True;
+  i := 1;
+  while Result and (i < PropCount) do
+  begin
+    Result := Result and (GetStrValueAt(i) = FirstVal);
+    Inc(i);
+  end;
+end;
+
+function TWSDLPort.GetValue: String;
+begin
+  Result := GetStrValue;
+end;
+
+procedure TWSDLPort.SetValue(const Value: string);
+begin
+  inherited;
+  SetStrValue(Value);
+end;
+
+procedure TWSDLPort.GetValues(Proc: TGetStrProc);
+Var Ports: TStrings;
+    Cnt: Integer;
+begin
+  inherited;
+  Ports := TWSDLClientDataSet(GetComponent(0)).SoapHelper.GetPorts;
+  For Cnt := 0 To Ports.Count -1 Do
+    Proc(Ports.Strings[Cnt]);
+end;
+
+{ TWSDLMethod }
+
+function TWSDLMethods.AllEqual: boolean;
+var
+  FirstVal: string;
+  i: Integer;
+begin
+  FirstVal := GetStrValue;
+  Result := True;
+  i := 1;
+  while Result and (i < PropCount) do
+  begin
+    Result := Result and (GetStrValueAt(i) = FirstVal);
+    Inc(i);
+  end;
+end;
+
+function TWSDLMethods.GetAttributes: TPropertyAttributes;
+begin
+  Result := [paValueList,paSortList];
+end;
+
+function TWSDLMethods.GetValue: string;
+begin
+  Result := GetStrValue;
+end;
+
+procedure TWSDLMethods.SetValue(const Value: string);
+begin
+  inherited;
+  SetStrValue(Value);
+end;
+
+procedure TWSDLMethods.GetValues(Proc: TGetStrProc);
+Var Methods: TStrings;
+    Cnt: Integer;
+begin
+  inherited;
+  Methods := TWSDLClientDataSet(GetComponent(0)).SoapHelper.GetMethods(True);
+  For Cnt := 0 To Methods.Count -1 Do
+    Proc(Methods.Strings[Cnt]);
+end;
+
+{ TWSDLMethodNumber }
+
+function TWSDLMethodNumber.AllEqual: boolean;
+var
+  FirstVal: string;
+  i: Integer;
+begin
+  FirstVal := GetStrValue;
+  Result := True;
+  i := 1;
+  while Result and (i < PropCount) do
+  begin
+    Result := Result and (GetStrValueAt(i) = FirstVal);
+    Inc(i);
+  end;
+end;
+
+function TWSDLMethodNumber.GetAttributes: TPropertyAttributes;
+begin
+  Result := [paValueList,paSortList];
+end;
+
+function TWSDLMethodNumber.GetValue: String;
+begin
+  Result := IntToStr(GetInt64Value);
+end;
+
+procedure TWSDLMethodNumber.SetValue(const Value: String);
+begin
+  inherited;
+  SetInt64Value(StrToInt(Value));
+end;
+
+procedure TWSDLMethodNumber.GetValues(Proc: TGetStrProc);
+Var Method: String;
+    Cnt: Integer;
+begin
+  inherited;
+  Method := TWSDLClientDataSet(GetComponent(0)).Method;
+  for Cnt := 0 to TWSDLClientDataSet(GetComponent(0)).SoapHelper.GetOverLoadCount(Method) - 1 do
+    Proc(IntToStr(Cnt + 1));
+end;
+
+
+end.

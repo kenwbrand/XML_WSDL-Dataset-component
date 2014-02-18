@@ -1,0 +1,59 @@
+package XMLComponents;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Components by KB'}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  dbrtl,
+  dsnap,
+  vcldb,
+  vcl,
+  vclx,
+  DesignIde,
+  vclactnband,
+  SynEdit_R2006,
+  webdsnap,
+  DEFINEDXML_D2006,
+  xmlrtl,
+  soaprtl,
+  inet,
+  IndySystem,
+  IndyProtocols,
+  IndyCore,
+  dclbde;
+
+contains
+  XMLClientDataSet in 'XMLClientDataSet.pas',
+  AutoTransform in 'AutoTransform.pas',
+  XMLPropertyEditor in 'XMLPropertyEditor.pas',
+  XMLPropertyEditorReg in 'XMLPropertyEditorReg.pas',
+  XMLURLClientDataSet in 'XMLURLClientDataSet.pas',
+  unit_SoapParams in 'unit_SoapParams.pas',
+  unit_SoapHelpers in 'unit_SoapHelpers.pas',
+  WSDLClientDataSet in 'WSDLClientDataSet.pas',
+  WSDLDataSetPropertyEditorsReg in 'WSDLDataSetPropertyEditorsReg.pas';
+
+end.
